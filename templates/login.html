@@ -1,10 +1,10 @@
 {% extends "base.html" %} {% block title %}Login{% endblock %} {% block content
 %}
 <form method="POST">
-  <fieldset class="login-fieldset" style="width: 350px; height: 380px">
+  <fieldset class="login-fieldset" style="width: 400px; height: 450px">
     <legend class="login-legend" align="center"><h3>Login</h3></legend>
 
-    <div class="form-group">
+    <div class="form-group mt-3" >
       <label for="email">Email Address</label>
       <input
         type="email"
@@ -27,8 +27,12 @@
       />
     </div>
 
-    <br />
-    <button type="submit" class="btn btn-success w-100">Login</button>
+
+    <button type="submit" class="btn btn-success w-100 mt-3">Login</button>
+    <div class="text-center mt-3"> Don't have an account? 
+      <a href="/sign-up" class="text-decoration-underline"
+        >Sign Up</a>
+    </div>
   </fieldset>
 </form>
 
