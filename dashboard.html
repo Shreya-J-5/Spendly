@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spendly – Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #0a0e14, #23314b, #0b1220, #45557e);
+        color: #e5e7eb;
+        min-height: 100vh;
+      }
+
+      /* Navbar */
+      .glass-nav {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(124, 131, 255, 0.25);
+      }
+
+      .nav-link {
+        color: #c7d2fe !important;
+        font-weight: 500;
+        margin-left: 10px;
+      }
+
+      .nav-link.active,
+      .nav-link:hover {
+        color: #fff !important;
+      }
+
+      /* Cards */
+      .glass-card {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(124, 131, 255, 0.35);
+        border-radius: 16px;
+      }
+
+      .stat-value {
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      .brand {
+        color: #7c83ff;
+      }
+
+      /* Add Expense Button */
+      .add-expense-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #7c83ff;
+        color: #fff;
+        border: none;
+        padding: 14px 26px;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px rgba(124, 131, 255, 0.35);
+        z-index: 999;
+        cursor: pointer;
+      }
+
+      .add-expense-btn:hover {
+        background: #6366f1;
+      }
+
+      .hero-btn {
+        background: #7c83ff;
+        border: none;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .hero-btn:hover {
+        background: #6366f1;
+        color: #fff;
+      }
+
+      .delete-btn {
+        background: #ef4444;
+        border: none;
+        color: #fff;
+        font-size: 12px;
+        padding: 4px 8px;
+      }
+
+      .delete-btn:hover {
+        background: #dc2626;
+      }
+
+      /* Navbar Brand Styles */
+      .navbar-brand {
+        color: #7c83ff !important;
+        text-decoration: none !important;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .navbar-brand:hover {
+        color: #7c83ff !important;
+      }
+
+      .navbar-brand img {
+        width: 45px;
+        height: 45px;
+        transition: all 0.3s ease;
+      }
+
+      .navbar-brand:hover img {
+        transform: scale(1.15) translateY(-3px);
+        filter: drop-shadow(0 8px 16px rgba(124, 131, 255, 0.4));
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= NAVBAR ================= -->
+    <nav class="navbar navbar-expand-lg glass-nav px-4">
+      <a class="navbar-brand fw-bold" href="/dashboard">
+        <img src="{{ url_for('static', filename='img.png') }}" alt="Logo">
+        Spendly
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navMenu"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="/dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item"><a href="/home" class="nav-link">Chart</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div
+      class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show m-3"
+      role="alert"
+    >
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="container mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-semibold">Dashboard</h3>
+        <span class="text-secondary">Welcome, {{ user.first_name }}</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="glass-card p-4">
+            <h6 class="text-secondary">Total Balance</h6>
+            <div class="stat-value text-success">
+              ₹{{ "%.2f"|format(total_balance) }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="glass-card p-4">
+            <h6 class="text-secondary">Total Income</h6>
+            <div class="stat-value text-info">
+              ₹{{ "%.2f"|format(total_income) }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="glass-card p-4">
+            <h6 class="text-secondary">Total Expense</h6>
+            <div class="stat-value text-danger">
+              ₹{{ "%.2f"|format(total_expense) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Expenses -->
+      <div class="glass-card p-4 mt-5">
+        <h5 class="fw-semibold mb-3">Recent Transactions</h5>
+        <div class="table-responsive">
+          {% if expenses %}
+          <table class="table table-dark table-borderless align-middle mb-0">
+            <thead>
+              <tr class="text-secondary">
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in expenses[:10] %}
+              <tr>
+                <td>{{ expense.date.strftime('%d %b') }}</td>
+                <td>
+                  <span
+                    class="badge {% if expense.type == 'Income' %}bg-success{% else %}bg-danger{% endif %}"
+                  >
+                    {{ expense.type }}
+                  </span>
+                </td>
+                <td>{{ expense.category }}</td>
+                <td>{{ expense.description or '-' }}</td>
+                <td
+                  class="{% if expense.type == 'Income' %}text-success{% else %}text-danger{% endif %}"
+                >
+                  {% if expense.type == 'Income' %}+{% else %}-{% endif %}₹{{
+                  "%.2f"|format(expense.amount) }}
+                </td>
+                <td>
+                  <button
+                    class="btn btn-sm delete-btn"
+                    onclick="deleteExpense({{ expense.id }})"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-secondary text-center py-3">
+            No transactions yet. Add one to get started!
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Add Expense Button -->
+    <button
+      class="add-expense-btn"
+      data-bs-toggle="modal"
+      data-bs-target="#addExpenseModal"
+    >
+      + Add
+    </button>
+
+    <!-- ================= ADD EXPENSE MODAL ================= -->
+    <div class="modal fade" id="addExpenseModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card">
+          <div class="modal-body p-4">
+            <h5 class="fw-semibold mb-3 text-center">Add Income / Expense</h5>
+
+            <form id="expenseForm">
+              <!-- Type -->
+              <div class="mb-3">
+                <label class="form-label">Type</label>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="type"
+                      id="incomeRadio"
+                      value="Income"
+                      checked
+                    />
+                    <label class="form-check-label" for="incomeRadio"
+                      >Income</label
+                    >
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="type"
+                      id="expenseRadio"
+                      value="Expense"
+                    />
+                    <label class="form-check-label" for="expenseRadio"
+                      >Expense</label
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Mode -->
+              <div class="mb-3">
+                <label class="form-label">Payment Mode</label>
+                <select
+                  name="paymentMode"
+                  class="form-select bg-dark text-light border-secondary"
+                >
+                  <option selected>Select mode</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Online">Online</option>
+                  <option value="Card">Card</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+
+              <!-- Category -->
+              <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select
+                  id="categorySelect"
+                  name="category"
+                  class="form-select bg-dark text-light border-secondary"
+                >
+                  <option selected>Select category</option>
+                </select>
+              </div>
+
+              <!-- Amount -->
+              <div class="mb-3">
+                <label class="form-label">Amount</label>
+                <input
+                  type="number"
+                  name="amount"
+                  class="form-control bg-dark text-light border-secondary"
+                  placeholder="Enter amount"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <!-- Description -->
+              <div class="mb-4">
+                <label class="form-label">Description</label>
+                <textarea
+                  name="description"
+                  class="form-control bg-dark text-light border-secondary"
+                  rows="2"
+                  placeholder="Optional note"
+                ></textarea>
+              </div>
+
+              <!-- Submit -->
+              <div class="d-grid">
+                <button type="submit" class="btn hero-btn">
+                  Add Transaction
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+  </body>
+</html>
