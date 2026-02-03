@@ -42,6 +42,8 @@ def sign_up():
         first_name = request.form.get('firstName')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
+        gender = request.form.get('gender')
+        number = request.form.get('number')
 
         user = User.query.filter_by(email=email).first()
         if user:
@@ -54,9 +56,18 @@ def sign_up():
             flash('Passwords don\'t match.', category='error')
         elif len(password1) < 7:
             flash('Password must be at least 7 characters.', category='error')
+        elif not gender:
+            flash('Please select a gender.', category='error')
+        elif not number or len(number) < 7:
+            flash('Please enter a valid phone number.', category='error')
         else:
-            new_user = User(email=email, first_name=first_name, password=generate_password_hash(
-                password1))
+            new_user = User(
+                email=email,
+                first_name=first_name,
+                password=generate_password_hash(password1),
+                gender=gender,
+                number=number
+            )
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
