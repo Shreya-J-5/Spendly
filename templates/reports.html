@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spendly – Reports</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #0a0e14, #23314b, #0b1220, #45557e);
+        color: #e5e7eb;
+        min-height: 100vh;
+      }
+      .glass-nav {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(124, 131, 255, 0.25);
+      }
+      .nav-link { color: #c7d2fe !important; font-weight: 500; margin-left: 10px; }
+      .nav-link.active, .nav-link:hover { color: #fff !important; }
+      .glass-card {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid rgba(124, 131, 255, 0.2);
+        border-radius: 16px;
+      }
+      .navbar-brand { color: #7c83ff !important; text-decoration: none !important; }
+      .table-dark { --bs-table-bg: rgba(30, 41, 59, 0.6); --bs-table-border-color: rgba(124, 131, 255, 0.2); }
+      .table-dark th, .table-dark td { color: #e5e7eb; border-color: rgba(124, 131, 255, 0.15); }
+      .badge-income { background: #22c55e; color: #fff; }
+      .badge-expense { background: #ef4444; color: #fff; }
+      .stat-box { background: rgba(124, 131, 255, 0.15); border-radius: 12px; padding: 1rem 1.25rem; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg glass-nav px-4">
+      <a class="navbar-brand fw-bold" href="/dashboard">
+        <img src="{{ url_for('static', filename='img.png') }}" alt="Logo" style="width:45px;height:45px;"> Spendly
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><a class="nav-link" href="/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/accounts"><i class="bi bi-wallet2"></i> Accounts</a></li>
+          <li class="nav-item"><a class="nav-link" href="/charts"><i class="bi bi-bar-chart"></i> Charts</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/reports"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle"></i> {{ user.first_name }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="/profile">Profile</a></li>
+              <li><a class="dropdown-item" href="/logout" onclick="return confirm('Are you sure you want to logout?')" class="text-danger">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container mt-5 pb-5">
+      <h2 class="mb-4"><i class="bi bi-clock-history"></i> Transaction History</h2>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="stat-box">
+            <small class="text-secondary">Total Income</small>
+            <div class="fw-bold text-success">₹ {{ "%.2f"|format(total_income) }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-box">
+            <small class="text-secondary">Total Expense</small>
+            <div class="fw-bold text-danger">₹ {{ "%.2f"|format(total_expense) }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-box">
+            <small class="text-secondary">Balance</small>
+            <div class="fw-bold text-info">₹ {{ "%.2f"|format(total_balance) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass-card p-3 p-md-4">
+        <h5 class="mb-3">All transactions (newest first)</h5>
+        {% if transactions %}
+        <div class="table-responsive">
+          <table class="table table-dark table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Payment</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in transactions %}
+              <tr>
+                <td>{{ t.date.strftime('%d %b %Y, %I:%M %p') if t.date else '—' }}</td>
+                <td>
+                  {% if t.type == 'Income' %}
+                  <span class="badge badge-income">Income</span>
+                  {% else %}
+                  <span class="badge badge-expense">Expense</span>
+                  {% endif %}
+                </td>
+                <td>{{ t.category or '—' }}</td>
+                <td>
+                  {% if t.type == 'Income' %}
+                  <span class="text-success">+ ₹ {{ "%.2f"|format(t.amount) }}</span>
+                  {% else %}
+                  <span class="text-danger">− ₹ {{ "%.2f"|format(t.amount) }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ t.description or '—' }}</td>
+                <td>{{ t.payment_mode or '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-secondary mb-0">No transactions yet. Add income or expenses from the <a href="/dashboard" class="text-info">Dashboard</a>.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
